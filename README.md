@@ -12,4 +12,8 @@ A project team submits a business brief, architecture and data-flow diagrams, an
 | [UK GDPR Chapter V](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/international-transfers/a-brief-guide-to-international-transfers/) | Does a data flow involve a restricted transfer, and what evidence supports the transfer mechanism? |
 | [FCA DISP 1.4.1R](https://handbook.fca.org.uk/handbook/disp1) | What does the workflow show about how a handler investigates the complaint, reviews evidence, and approves a response? |
 
-The demo will show how revised vendor evidence changes an assessment. Findings are inputs to human review. The repository is at the concept stage and examples will use synthetic data.
+The demo will test a synthetic complaints assistant against the owner's declared data-flow boundaries. It will force a timeout, show which provider receives the transcript, and rerun the same checks after a proposed fix. Findings are inputs to human review.
+
+[Product spec and demo acceptance criteria](docs/product-spec.md)
+
+**Status:** Design and documentation. The sandbox demo is planned.
