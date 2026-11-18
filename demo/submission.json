@@ -1,0 +1,23 @@
+{
+  "id": "RAI-026",
+  "revision": "1",
+  "title": "Complaints Investigation Assistant",
+  "owner": "Customer Operations",
+  "environment": "Pre-production",
+  "release": "complaints-demo@0.1.0",
+  "purpose": "Investigate retail complaints and prepare a draft for a human handler.",
+  "personalData": true,
+  "ukGdprApplies": true,
+  "bankInitiatesFlow": true,
+  "complaintsInScope": true,
+  "boundary": "Only the approved UK processor receives complaint transcripts.",
+  "declarations": { "article28": "Applies", "chapterV": "Out of scope", "disp": "Applies" },
+  "primary": { "entity": "Peregrine Model Services Ltd", "service": "Complaints summarisation", "region": "United Kingdom", "role": "Processor", "separateEntity": true, "outsideUK": false },
+  "fallback": { "entity": "Meridian Inference Inc", "service": "Complaints summarisation", "region": "United States", "role": "Processor", "separateEntity": true, "outsideUK": true },
+  "configuration": { "fallbackEnabled": true },
+  "agreements": [
+    { "entity": "Peregrine Model Services Ltd", "service": "Complaints summarisation", "transcriptsCovered": true, "documentedInstructions": true, "subprocessorTerms": true }
+  ],
+  "transferMechanisms": [],
+  "workflow": { "handlerApproval": true, "sourceRecordAccess": null, "conflictEscalation": true }
+}

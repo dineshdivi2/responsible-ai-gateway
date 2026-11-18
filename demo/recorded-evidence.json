@@ -1,0 +1,56 @@
+{
+  "kind": "Recorded test evidence",
+  "release": "complaints-demo@0.1.0",
+  "sourceHash": "faaba37f5d665271f52292a725211427025304aa339e56004da0003f330f1167",
+  "recordedAt": "2026-11-18T08:48:00.236Z",
+  "scenarios": [
+    {
+      "id": "primary_success",
+      "configuration": {
+        "fallbackEnabled": true
+      },
+      "observed": [
+        {
+          "destination": "primary",
+          "received": "synthetic transcript"
+        }
+      ]
+    },
+    {
+      "id": "primary_timeout",
+      "configuration": {
+        "fallbackEnabled": true
+      },
+      "observed": [
+        {
+          "destination": "primary",
+          "received": "synthetic transcript"
+        },
+        {
+          "destination": "fallback",
+          "received": "synthetic transcript"
+        }
+      ]
+    },
+    {
+      "id": "primary_timeout_disabled",
+      "configuration": {
+        "fallbackEnabled": false
+      },
+      "observed": [
+        {
+          "destination": "primary",
+          "received": "synthetic transcript"
+        }
+      ],
+      "handoff": "complaint-handler"
+    },
+    {
+      "id": "reply_requires_approval",
+      "observed": {
+        "sendsBeforeApproval": 0,
+        "sendsAfterApproval": 1
+      }
+    }
+  ]
+}
