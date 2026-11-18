@@ -4,7 +4,7 @@
 
 **Scope.** Pre-deployment review of an AI assistant that investigates retail complaints and drafts a response for a human handler. NatWest has publicly described trialling a complaints investigation agent. The design, vendors and documents below are synthetic. [NatWest’s public trial description](https://www.natwestgroup.com/news-and-insights/latest-stories/ai-and-data/2026/may/collaborating-with-the-financial-conduct-authority-on-testing-ag.html)
 
-**Decision.** Give the Responsible AI reviewer a record of which requirements apply, which controls the submitted design evidences, what needs clarification and who owns each next action. A reviewer confirms the facts and records the disposition.
+**Product promise.** Before signing off an AI use case, the Responsible AI reviewer can see which owner claims the evidence supports, where the proposed release behaves differently, and what evidence is needed next. The gateway recommends findings and the reviewer records the decision.
 
 ## Facts to capture once
 
@@ -23,7 +23,7 @@ Keep a source reference for each fact, including document revision and page, cla
 2. **Reconstruct the system from evidence.** Review the architecture, then trace the relevant workflows in code and in the configuration for the target environment. Record each path with its inputs, conditions, destinations and effects. Use the vendor agreement or deployment evidence to establish facts such as the receiving legal entity and where access occurs.
 3. **Look for counterexamples.** For each declared boundary, check normal operation and relevant alternatives such as fallback providers, retries, background jobs, logging and support access. Record the shortest evidence chain that supports or challenges the owner’s claim. A path in source code establishes a possibility. Target-environment configuration or appropriate tests can establish that the path is enabled or reachable. Record coverage gaps where the evidence cannot settle the question.
 4. **Derive applicability independently.** Assess all three requirements against the reconstructed facts using the versioned checklist. Compare the result with the owner's declared applicability afterward. Show *Applies*, *Out of scope* or *Unresolved* per requirement or flow, alongside the owner's answer. Track omitted declarations and changes in factual claims even where the applicability result stays the same.
-5. **Resolve and recheck.** The reviewer can ask for better evidence, request a design or code change, or ask the owner to correct the declaration. Record the decision against the reviewed artefact revisions. Recheck affected findings when the owner resubmits.
+5. **Record the decision.** The reviewer can request evidence, ask the owner to clarify a declaration, or record a scoped disposition with a rationale. Bind the decision to the reviewed artefact revisions. When the owner resubmits, recheck affected findings and preserve the earlier review.
 
 ### How the gateway distinguishes findings
 
@@ -58,32 +58,40 @@ For example, the owner may correctly declare that FCA DISP applies while incorre
 - **MVP check.** If the workflow shows mandatory human approval but omits source-record access, mark approval **Evidenced in design** and source-record access **Evidence missing**. If the workflow explicitly lets the assistant send the final response before the required approval, flag a **Gap identified** against the proposed approval control.
 - **Owner.** The complaints control owner confirms coverage and decides what operational testing is needed. [FCA Handbook DISP 1](https://handbook.fca.org.uk/handbook/disp1)
 
-## Finding format
+## Reviewer decision screen
 
-Every finding records the **requirement and version**, **use-case revision**, **applicability** (Applies, Out of scope or Unresolved), **evidence status** (Evidenced in design, Evidence missing, Gap identified or Specialist review needed), **owner declaration and comparison**, **evidence level**, **source references**, **reason**, **next action** and **owner**. The reviewer confirms and records the disposition. Preserve the earlier finding when a document revision changes the result.
+Lead with **What needs to happen before sign-off?** For the seeded case, show two requests: the agreement covering the fallback processor and evidence of the transfer mechanism for that flow. Give each request an owner and a link to the finding that raised it.
 
-## Demo and acceptance criteria
+Show three answers for each requirement:
 
-The owner submits a synthetic complaints assistant and declares that no overseas third party can access customer transcripts, so they mark Chapter V out of scope. They declare Article 28 and FCA DISP in scope, and promise mandatory handler approval. The architecture shows a UK primary model. The submission includes the application code, target-environment configuration and vendor documents.
+| Reviewer question | What the gateway shows |
+| --- | --- |
+| Does it apply? | **Applies**, **Out of scope**, or **Unresolved**, alongside the owner's declaration and any mismatch. |
+| What do the checks substantiate? | A scoped evidence grade for applicable checks, with the individual findings and cited evidence. |
+| What did the reviewer decide? | A recorded disposition and rationale, such as **Request evidence**, kept alongside the gateway's original assessment. |
 
-| Evidence presented | Expected reviewer result |
-|---|---|
-| The repo contains a fallback model path, but the submission omits the target-environment setting. | The UK-only claim is **Unverified** for the release. Chapter V applicability is **Unresolved**. Request the setting and recipient details. |
-| The repo shows the request includes transcripts. The target configuration enables fallback. Vendor evidence identifies a separate overseas recipient, and the case establishes that the bank initiates the transfer and UK GDPR applies. | The UK-only claim is **Contradicted**. Chapter V changes to **Applies**, against the owner's **Out of scope** declaration. If the packet lacks the transfer mechanism, show **Evidence missing** separately. |
-| The fallback provider acts as a processor, but the packet supplies an agreement for the primary provider alone. | Article 28 remains **Applies**. Raise an evidence gap for the fallback processor, with no applicability mismatch. |
-| The architecture shows mandatory handler approval. The implementation and a test confirm the reply waits for that approval on the reviewed path, while the packet omits evidence of the handler's source-record access. | FCA DISP remains **Applies**. Record the evidence supporting the approval control on that path. Request evidence of source-record access. |
-| The owner resubmits with fallback disabled in the target configuration. | Recheck the affected findings. Retain the prior assessment. Treat Chapter V as out of scope for the reviewed flow only if the evidence also resolves any remaining relevant access or transfer paths. |
+| Evidence grade | Meaning |
+| --- | --- |
+| **Fully evidenced** | Evidence supports every applicable check in the selected scope. |
+| **Partially evidenced** | Evidence supports at least one applicable check, and one or more other checks have a gap or remain open. |
+| **Confirmed gaps across all checks** | Evidence establishes a gap on every applicable check. |
+| **Insufficient evidence** | Applicability is unresolved, or no applicable check is supported and at least one remains unverified. |
 
-The demo succeeds if the reviewer can open the evidence behind a mismatch, distinguish a reachable path from a possible one, and see which decision changes on resubmission.
+Each finding cites the document revision and page, contract clause, or code and configuration reference. A test observation identifies the scenario, source revision, configuration and result. The report also retains the requirement version, submission revision, finding rationale and next action.
 
-## Sandbox review and repair
+## Judge walkthrough
 
-The prototype uses a synthetic codebase, stubbed model providers and synthetic complaint data. Each run records the source commit, test configuration and version of the approved controls.
+1. **Open the submission.** The owner declares that complaint transcripts stay with the approved UK processor and marks Chapter V out of scope. The submitted diagram shows the primary provider.
+2. **Open the discrepancy.** The repository shows a timeout route, the release configuration enables it, and the vendor schedule identifies a separate overseas recipient. A recorded test shows the fallback stub receiving a synthetic transcript for that scenario. The seeded case establishes that UK GDPR applies and the bank initiates the flow.
+3. **Review the three findings.** Chapter V is **Applies / Insufficient evidence** because the packet lacks evidence of a transfer mechanism. Article 28 is **Applies / Partially evidenced** because the primary agreement supports the selected checks for that processor and the submission lacks a fallback agreement. DISP remains **Applies**, with evidence shown separately for each selected complaints control.
+4. **Record the decision.** Select **Request evidence**. The review record identifies the two requested items, their owners, the affected release and the rationale for keeping sign-off pending.
 
-1. **Approve the checks.** A reviewer translates the declared boundaries into testable assertions. The demo checks whether a primary-provider timeout routes the case to a human handler without sending the transcript to a fallback provider. A second check confirms that the normal investigation still completes.
-2. **Run the baseline.** In an isolated sandbox, force the primary stub to time out. The fallback stub records receipt of the synthetic transcript. Link the failing test to the source path and configuration that enabled it.
-3. **Propose the repair.** Give a coding agent the failed assertion, evidence and a narrow change scope. Its proposed patch routes a timeout to a handler. The gateway retains control of the acceptance checks.
-4. **Verify in a fresh sandbox.** Apply the candidate diff and run the same checks. Record the baseline and patched results, the diff and any scenarios that could not be verified. The reviewer decides whether to accept the change.
-5. **Reassess the affected flows.** Update findings for the reviewed release. Tests establish behaviour under the tested conditions. Processor agreements and transfer mechanisms still need their own evidence where applicable.
+## Demo acceptance criteria
 
-The sandbox uses isolated storage and preloaded dependencies. Keep production credentials and outbound network access outside the prototype sandbox.
+- In about 90 seconds, a judge can explain what the owner declared, why the assessment differs, and which evidence is needed next.
+- The judge can open the configuration, vendor schedule and recorded observation behind the fallback finding in one click from the finding.
+- A test record is labelled **Recorded test evidence** and shows the scenario, reviewed release and observed result. If the demo uses an illustrative fixture before any test has run, label it **Simulated evidence**. Where no usable observation exists, expose that check as unverified.
+- In a variant with missing release configuration, the source path remains possible and the fallback transfer stays **Unresolved** unless other evidence establishes the flow for that release.
+- Saving **Request evidence** preserves the original assessment and its citations.
+
+The primary demo uses preloaded synthetic evidence. A live sandbox is an optional source of test evidence when a reviewer needs to reproduce behaviour. The gateway reviews the proposed release and records the evidence needed for a human decision.
