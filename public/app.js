@@ -32,6 +32,13 @@ function evidenceButton(id, label) {
   return '<button type="button" class="evidence-link" data-evidence="' + esc(id) + '">' + esc(label) + ' <span aria-hidden="true">↗</span></button>';
 }
 
+const flowSteps = [
+  ['source', 'Code path', 'When the fallback can run'],
+  ['config', 'Release setting', 'Whether this release enables it'],
+  ['timeout', 'Timeout test', 'What the test observed'],
+  ['vendor', 'Vendor entity', 'Who receives the data and where'],
+];
+
 function renderRequirement(rule, evidence) {
   const checks = rule.findings.map(finding =>
     '<div class="check"><div><strong>' + esc(finding.title) + '</strong>' + tag(finding.status) + '</div>' +
@@ -53,26 +60,32 @@ function render(run) {
   const s = run.submission;
   const evidence = new Map(run.evidence.map(entry => [entry.id, entry]));
   const latest = run.decisions.at(-1);
-  const requests = run.requests.map((item, index) =>
-    '<li><span class="req-index">' + String(index + 1).padStart(2, '0') + '</span><div><strong>' + esc(item.title) +
+  const requests = run.requests.map(item =>
+    '<li><div><strong>' + esc(item.title) +
     '</strong><span>' + esc(item.owner) + '</span></div><button type="button" class="text-link" data-rule="' +
     esc(item.requirement) + '">Open finding <span aria-hidden="true">↘</span></button></li>'
   ).join('');
-  const trail = run.discrepancy.refs.map(id => evidenceButton(id, evidence.get(id).title)).join('');
+  const trail = flowSteps.filter(([id]) => run.discrepancy.refs.includes(id)).map(([id, label, detail]) =>
+    '<li><button type="button" data-evidence="' + id + '"><strong>' + label + '</strong><span>' +
+    (evidence.get(id).kind === 'Unverified' ? 'Observation unverified' : detail) + '</span></button></li>'
+  ).join('');
   const history = run.decisions.slice().reverse().map(item =>
     '<li><strong>' + esc(item.action) + '</strong><span>' + esc(timestamp(item.recordedAt)) + '</span><p>' +
     esc(item.rationale) + '</p></li>'
   ).join('');
   workspace.innerHTML =
-    '<section class="case-heading"><div class="case-meta"><span class="section-label">AI USE CASE REVIEW</span>' +
+    '<section class="case-heading"><div class="case-meta">' +
     tag('Revision ' + s.revision) + '</div><h1>' + esc(s.title) + '</h1><p class="case-details">' +
     esc(s.owner) + '<span aria-hidden="true">·</span>' + esc(s.environment) + '</p></section>' +
-    '<div class="review-grid"><section class="panel requests"><div class="panel-heading"><div><h2>What needs to happen before sign-off?</h2>' +
-    '<p>Follow-up evidence requested for this release</p></div><span class="count">' + run.requests.length + '</span></div><ol>' + requests + '</ol></section>' +
-    '<section class="panel owner"><span class="section-label">OWNER DECLARATION</span><blockquote>“' + esc(s.boundary) +
-    '”</blockquote><div class="sources">' + evidenceButton('owner', 'Business proposal') + evidenceButton('architecture', 'Architecture') + '</div></section></div>' +
-    '<section class="discrepancy"><div class="finding-title">' + tag(run.discrepancy.status) + '<span class="muted">Data flow review</span></div><h2>' +
-    esc(run.discrepancy.headline) + '</h2><p>' + esc(run.discrepancy.detail) + '</p><div class="sources">' + trail + '</div></section>' +
+    '<section class="comparison" aria-label="Data flow review"><div class="review-grid">' +
+    '<div class="owner"><h2 class="comparison-label">Owner declaration</h2><blockquote>“' + esc(s.boundary) +
+    '”</blockquote><div class="sources">' + evidenceButton('owner', 'Business proposal') + evidenceButton('architecture', 'Architecture') + '</div></div>' +
+    '<div class="discrepancy"><div class="finding-title"><span class="comparison-label">Gateway finding</span>' + tag(run.discrepancy.status) +
+    '</div><h2>' + esc(run.discrepancy.headline) + '</h2><p>' + esc(run.discrepancy.detail) + '</p></div></div>' +
+    '<section class="evidence-trail"><h2>Evidence trail</h2><ol>' + trail + '</ol></section></section>' +
+    '<section class="requests"><div class="panel-heading"><div><h2>What needs to happen before sign-off?</h2></div>' +
+    (requests ? '<button type="button" class="primary" id="request-evidence">Request evidence</button>' : '') + '</div>' +
+    (requests ? '<ul>' + requests + '</ul>' : '<p class="muted">The assessed checks raised no evidence requests for this release.</p>') + '</section>' +
     '<section id="assessment" class="assessment"><div class="section-heading"><h2>Regulatory assessment</h2><span>' + esc(s.policy) +
     '</span></div>' + run.requirements.map(rule => renderRequirement(rule, evidence)).join('') + '</section>' +
     '<section id="decision" class="panel decision"><div class="panel-heading"><div><h2>Reviewer decision</h2><p>' +
@@ -120,6 +133,12 @@ async function runSelected() {
 runButton.addEventListener('click', runSelected);
 at('.close').addEventListener('click', () => drawer.close());
 drawer.addEventListener('click', event => { if (event.target === drawer) drawer.close(); });
+workspace.addEventListener('click', event => {
+  if (!event.target.closest('#request-evidence')) return;
+  at('#action').value = 'Request evidence';
+  at('#decision').scrollIntoView({ block: 'start' });
+  at('#rationale').focus({ preventScroll: true });
+});
 document.addEventListener('click', async event => {
   const button = event.target.closest('button[data-evidence], button[data-rule], button[data-review]');
   if (!button) return;
